@@ -1,5 +1,3 @@
-use rand::random;
-use rand::seq::SliceRandom;
 use std::{thread, time};
 
 const SLEEP_INTERVAL : time::Duration = time::Duration::from_millis(100);
