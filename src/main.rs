@@ -61,6 +61,37 @@ impl Snake {
         }
         return false;
     }
+
+    fn distance_to_food(&self, field: &Field) -> f64 {
+        let x : i32 = i32::pow(self.body[0].0 as i32 - field.food.position.0 as i32, 2);
+        let y : i32 = i32::pow(self.body[0].1 as i32 - field.food.position.1 as i32, 2);
+        f64::sqrt((x+y) as f64)
+    }
+
+    fn decide(&mut self, field: &mut Field) -> Direction {
+        let mut ps : Vec<(Direction, f64)> = Vec::new();
+        for dir in DIRS {
+            let mut future_snake = Snake {
+                kind : self.kind,
+                body : self.body.clone(),
+            };
+            println!("Future Snake: {:?}", future_snake.body);
+            future_snake.step(field, &dir);
+            if !future_snake.is_dead() {
+                let dist: f64 = future_snake.distance_to_food(field);
+                ps.push((dir, dist));
+            }
+        }
+        let mut best_dir : Direction = Direction::Up;
+        let mut min_dist : f64 = f64::MAX;
+        for (d, f) in ps {
+            if f < min_dist {
+                min_dist = f;
+                best_dir = d;
+            }
+        }
+        return best_dir;
+    }
 }
 
 struct Food {
@@ -113,10 +144,10 @@ fn main() {
     };
     loop {
 
-        let d = DIRS.choose(&mut rand::thread_rng()).unwrap();
+        //let d = DIRS.choose(&mut rand::thread_rng()).unwrap();
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        println!("Next step: {:?}", d);
-        s.step(&mut f, d);
+        let next_dir : Direction = s.decide(&mut f);
+        s.step(&mut f, &next_dir);
         if s.is_dead() {
             println!("Snek is ded. So sad! 🪦");
             println!("Snek was {} years old.", s.body.len()-5);
