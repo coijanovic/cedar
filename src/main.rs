@@ -60,10 +60,22 @@ impl Snake {
         return false;
     }
 
-    fn distance_to_food(&self, field: &Field) -> f64 {
+    fn euclidian_distance_to_food(&self, field: &Field) -> f64 {
         let x : i32 = i32::pow(self.body[0].0 as i32 - field.food.position.0 as i32, 2);
         let y : i32 = i32::pow(self.body[0].1 as i32 - field.food.position.1 as i32, 2);
         f64::sqrt((x+y) as f64)
+    }
+    fn toroidal_distance_to_food(&self, field: &Field) -> f64 {
+        let mut x : f64 = (self.body[0].0 as f64 - field.food.position.0 as f64).abs();
+        let mut y : f64 = (self.body[0].1 as f64 - field.food.position.1 as f64).abs();
+
+        if x > 0.5 {
+            x = 1.0 - x;
+        }
+        if y > 0.5 {
+            y = 1.0 - y;
+        }
+        f64::sqrt(x*x + y*y)
     }
 
     fn decide(&self, field: &Field) -> Direction {
@@ -84,7 +96,7 @@ impl Snake {
             };
             future_snake.step(&mut future_field, &dir);
             if !future_snake.is_dead() {
-                let dist: f64 = future_snake.distance_to_food(field);
+                let dist: f64 = future_snake.toroidal_distance_to_food(field);
                 ps.push((dir, dist));
             }
         }
