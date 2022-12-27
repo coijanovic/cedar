@@ -2,7 +2,7 @@ use rand::random;
 use rand::seq::SliceRandom;
 use std::{thread, time};
 
-const SLEEP_INTERVAL : time::Duration = time::Duration::from_millis(150);
+const SLEEP_INTERVAL : time::Duration = time::Duration::from_millis(100);
 
 #[derive(Debug)]
 enum Direction {
@@ -68,15 +68,23 @@ impl Snake {
         f64::sqrt((x+y) as f64)
     }
 
-    fn decide(&mut self, field: &mut Field) -> Direction {
+    fn decide(&self, field: &Field) -> Direction {
         let mut ps : Vec<(Direction, f64)> = Vec::new();
         for dir in DIRS {
             let mut future_snake = Snake {
                 kind : self.kind,
                 body : self.body.clone(),
             };
-            println!("Future Snake: {:?}", future_snake.body);
-            future_snake.step(field, &dir);
+            let mut future_field = Field {
+                width : field.width,
+                height : field.height,
+                kind : field.kind,
+                food : Food {
+                    kind : field.food.kind,
+                    position : field.food.position,
+                },
+            };
+            future_snake.step(&mut future_field, &dir);
             if !future_snake.is_dead() {
                 let dist: f64 = future_snake.distance_to_food(field);
                 ps.push((dir, dist));
@@ -146,7 +154,7 @@ fn main() {
 
         //let d = DIRS.choose(&mut rand::thread_rng()).unwrap();
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let next_dir : Direction = s.decide(&mut f);
+        let next_dir : Direction = s.decide(&f);
         s.step(&mut f, &next_dir);
         if s.is_dead() {
             println!("Snek is ded. So sad! 🪦");
