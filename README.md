@@ -10,3 +10,13 @@ Have you ever wanted to watch your computer play snake in a somewhat clumsy fash
 Here you go!
 
 `cargo run` and enjoy! 🐍
+
+## Usage
+
+You can choose the decision algorithm the snake uses via commandline flags.
+The available options are:
+
+- `--random`: The snake chooses a random (possible) direction for every step
+- `--greedy`: The snake selects the (possible) direction which brings her closest to the food in the next step 
+
+Use `--help` for more information.
