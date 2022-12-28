@@ -32,6 +32,7 @@ struct Snake {
 }
 
 impl Snake {
+    /// Returns a new snake which starts in the upper left corner
     fn new(kind: char) -> Snake {
         Snake {
             kind,
@@ -39,6 +40,8 @@ impl Snake {
         }
     }
 
+    /// Lets the snake execute one step in the supplied direction on the supplied field.
+    /// If the snake steps onto food, she eats it.
     fn step(&mut self, field: &mut Field, dir: &Direction) {
         let new_head : (u8, u8) = match dir {
             Direction::Up => (self.body[0].0, (self.body[0].1 + field.height - 1) % field.height),
@@ -57,6 +60,8 @@ impl Snake {
         }
     }
 
+    /// Checks if the snake is dead.
+    /// A dead snake is a snake who has crossed over herself.
     fn is_dead(&self) -> bool {
         for (i, one) in self.body.iter().enumerate() {
             for (j, two) in self.body.iter().enumerate() {
@@ -68,6 +73,8 @@ impl Snake {
         return false;
     }
 
+    /// Checks if the snake can eat.
+    /// This is the case if her head is in the same cell as food.
     fn can_eat(&self, field: &Field) -> bool {
         if self.body[0] == field.food.position {
             return true;
@@ -75,12 +82,16 @@ impl Snake {
         return false;
     }
 
+    /// Computes the euclidian distance between the snake's head and the food.
     fn euclidian_distance_to_food(&self, field: &Field) -> f64 {
         let x : i32 = i32::pow(self.body[0].0 as i32 - field.food.position.0 as i32, 2);
         let y : i32 = i32::pow(self.body[0].1 as i32 - field.food.position.1 as i32, 2);
         f64::sqrt((x+y) as f64)
     }
 
+    /// Computes the toroidal distance between the snake's head and food.
+    /// This should cause the snake to go through walls more often.
+    /// See https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
     fn toroidal_distance_to_food(&self, field: &Field) -> f64 {
         let mut x : f64 = (self.body[0].0 as f64 - field.food.position.0 as f64).abs();
         let mut y : f64 = (self.body[0].1 as f64 - field.food.position.1 as f64).abs();
@@ -94,6 +105,9 @@ impl Snake {
         f64::sqrt(x*x + y*y)
     }
 
+    /// Returns the direction the snake should step in next via a greedy algorithm.
+    /// The snake selects the direction which does not kill her in the next step and minimizes her
+    /// (toroidal) distance to food.
     fn decide_greedy_distance(&self, field: &Field) -> Direction {
         let mut ps : Vec<(Direction, f64)> = Vec::new();
         for dir in DIRS {
@@ -127,6 +141,8 @@ impl Snake {
         return best_dir;
     }
 
+    /// Returns the direction the snake could step in next via a random choice (of directes which
+    /// do not kill her in the next step).
     fn decide_random(&self, field: &Field) -> Direction {
         let mut ps : Vec<Direction> = Vec::new();
         for dir in DIRS {
@@ -165,6 +181,7 @@ struct Field {
 }
 
 impl Field {
+    /// Prints the field including snake and food.
     fn print(&self, snake: &Snake) {
         for i in 0..self.height {
             for j in 0..self.width {
@@ -182,6 +199,7 @@ impl Field {
         print!("\n");
     }   
 
+    /// Returns a random coordinate that lies within the field
     fn get_random_pos(&self) -> (u8, u8) {
         let x : u8 = rand::random::<u8>() % self.width;
         let y : u8 = rand::random::<u8>() % self.height;
@@ -202,8 +220,10 @@ fn main() {
             position: (10, 15),
         },
     };
+
     loop {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+
         let mut next_dir : Direction = Direction::Up;
         if args.random {
             next_dir = s.decide_random(&f);
@@ -215,11 +235,13 @@ fn main() {
         }
 
         s.step(&mut f, &next_dir);
+
         if s.is_dead() {
             println!("Snek is ded. So sad! 🪦");
             println!("Snek was {} years old.", s.body.len()-5);
             break;
         }
+
         f.print(&s);
         thread::sleep(SLEEP_INTERVAL);
     }
