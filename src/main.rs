@@ -1,7 +1,21 @@
 use std::{thread, time};
 use rand::seq::SliceRandom;
+use clap::{Parser};
 
 const SLEEP_INTERVAL : time::Duration = time::Duration::from_millis(100);
+
+/// Watch the snake as it hunts 🐍
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Use random walk
+    #[arg(short, long)]
+    random: bool,
+
+    /// Use greedy shortest path
+    #[arg(short, long)]
+    greedy: bool,
+}
 
 #[derive(Copy, Clone, Debug)]
 enum Direction {
@@ -176,6 +190,8 @@ impl Field {
 }
 
 fn main() {
+    let args = Args::parse();
+
     let mut s = Snake::new('🤖');
     let mut f = Field {
         width: 30,
@@ -187,10 +203,17 @@ fn main() {
         },
     };
     loop {
-
-        //let d = DIRS.choose(&mut rand::thread_rng()).unwrap();
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let next_dir : Direction = s.decide_random(&f);
+        let mut next_dir : Direction = Direction::Up;
+        if args.random {
+            next_dir = s.decide_random(&f);
+        } else if args.greedy {
+            next_dir = s.decide_greedy_distance(&f);
+        } else {
+            next_dir = s.decide_greedy_distance(&f);
+
+        }
+
         s.step(&mut f, &next_dir);
         if s.is_dead() {
             println!("Snek is ded. So sad! 🪦");
