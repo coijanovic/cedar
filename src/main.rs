@@ -1,8 +1,9 @@
 use std::{thread, time};
+use rand::seq::SliceRandom;
 
 const SLEEP_INTERVAL : time::Duration = time::Duration::from_millis(100);
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 enum Direction {
     Up,
     Down,
@@ -65,6 +66,7 @@ impl Snake {
         let y : i32 = i32::pow(self.body[0].1 as i32 - field.food.position.1 as i32, 2);
         f64::sqrt((x+y) as f64)
     }
+
     fn toroidal_distance_to_food(&self, field: &Field) -> f64 {
         let mut x : f64 = (self.body[0].0 as f64 - field.food.position.0 as f64).abs();
         let mut y : f64 = (self.body[0].1 as f64 - field.food.position.1 as f64).abs();
@@ -78,7 +80,7 @@ impl Snake {
         f64::sqrt(x*x + y*y)
     }
 
-    fn decide(&self, field: &Field) -> Direction {
+    fn decide_greedy_distance(&self, field: &Field) -> Direction {
         let mut ps : Vec<(Direction, f64)> = Vec::new();
         for dir in DIRS {
             let mut future_snake = Snake {
@@ -109,6 +111,30 @@ impl Snake {
             }
         }
         return best_dir;
+    }
+
+    fn decide_random(&self, field: &Field) -> Direction {
+        let mut ps : Vec<Direction> = Vec::new();
+        for dir in DIRS {
+            let mut future_snake = Snake {
+                kind : self.kind,
+                body : self.body.clone(),
+            };
+            let mut future_field = Field {
+                width : field.width,
+                height : field.height,
+                kind : field.kind,
+                food : Food {
+                    kind : field.food.kind,
+                    position : field.food.position,
+                },
+            };
+            future_snake.step(&mut future_field, &dir);
+            if !future_snake.is_dead() {
+                ps.push(dir);
+            }
+        }
+        return *ps.choose(&mut rand::thread_rng()).unwrap();
     }
 }
 
@@ -164,7 +190,7 @@ fn main() {
 
         //let d = DIRS.choose(&mut rand::thread_rng()).unwrap();
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let next_dir : Direction = s.decide(&f);
+        let next_dir : Direction = s.decide_random(&f);
         s.step(&mut f, &next_dir);
         if s.is_dead() {
             println!("Snek is ded. So sad! 🪦");
