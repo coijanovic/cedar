@@ -15,6 +15,10 @@ struct Args {
     /// Use greedy shortest path
     #[arg(short, long)]
     greedy: bool,
+
+    /// Use 'L' algorithm
+    #[arg(short, long)]
+    angle: bool,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -240,9 +244,10 @@ fn main() {
             next_dir = s.decide_random(&f);
         } else if args.greedy {
             next_dir = s.decide_greedy_distance(&f);
-        } else {
+        } else if args.angle {
             next_dir = s.decide_l(&f);
-
+        } else {
+            next_dir = s.decide_random(&f);
         }
 
         s.step(&mut f, &next_dir);
