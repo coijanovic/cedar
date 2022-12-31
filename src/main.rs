@@ -63,9 +63,9 @@ impl Snake {
     /// Checks if the snake is dead.
     /// A dead snake is a snake who has crossed over herself.
     fn is_dead(&self) -> bool {
-        for (i, one) in self.body.iter().enumerate() {
-            for (j, two) in self.body.iter().enumerate() {
-                if i != j && one == two {
+        for i in 0..self.body.len() {
+            for j in i+1..self.body.len() {
+                if self.body[i] == self.body[j] {
                     return true;
                 }
             }
