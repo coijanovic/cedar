@@ -16,7 +16,9 @@ Here you go!
 You can choose the decision algorithm the snake uses via commandline flags.
 The available options are:
 
-- `--random`: The snake chooses a random (possible) direction for every step
-- `--greedy` (default): The snake selects the (possible) direction which brings her closest to the food in the next step 
+- `--random` (default): The snake chooses a random (possible) direction for every step
+- `--greedy`: The snake selects the (possible) direction which brings her closest to the food in the next step 
+- `--angle`: If the food is in the same column as the snake, she goes down. 
+  Otherwise, she goes right.
 
 Use `--help` for more information.
