@@ -141,7 +141,7 @@ impl Snake {
         return best_dir;
     }
 
-    /// Returns the direction the snake could step in next via a random choice (of directes which
+    /// Returns the direction the snake wants to step in next via a random choice (of directions which
     /// do not kill her in the next step).
     fn decide_random(&self, field: &Field) -> Direction {
         let mut ps : Vec<Direction> = Vec::new();
@@ -165,6 +165,17 @@ impl Snake {
             }
         }
         return *ps.choose(&mut rand::thread_rng()).unwrap();
+    }
+
+    /// Returns the direction the snake wants to step in next based on the x-position of the food:
+    /// If the snake is in the same column as the food, go down.
+    /// Otherwise go right.
+    fn decide_l(&self, field: &Field) -> Direction {
+        if self.body[0].0 == field.food.position.0 {
+            return Direction::Down;
+        } else {
+            return Direction::Right;
+        }
     }
 }
 
@@ -230,7 +241,7 @@ fn main() {
         } else if args.greedy {
             next_dir = s.decide_greedy_distance(&f);
         } else {
-            next_dir = s.decide_greedy_distance(&f);
+            next_dir = s.decide_l(&f);
 
         }
 
